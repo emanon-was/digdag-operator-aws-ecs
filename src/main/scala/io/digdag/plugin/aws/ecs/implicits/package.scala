@@ -44,6 +44,20 @@ package object implicits {
     }
   }
 
+  implicit class RichOption[T](val self: Option[T]) {
+    def toEither(): Either[Unit, T] = self match {
+      case Some(a) => Right(a)
+      case None => Left(())
+    }
+  }
+
+  implicit class RichOptionEither[T](val self: Either[Unit, T]) {
+    def toOption(): Option[T] = self match {
+      case Left(_) => None
+      case Right(a) => Some(a)
+    }
+  }
+
   implicit class RichTry[T](val self: Try[T]) {
     def toEither(): Either[_ <: Throwable, T] = self match {
       case Failure(a) => Left(a)
@@ -56,6 +70,13 @@ package object implicits {
     def unwrap(): T = self match {
       case Failure(a) => throw a
       case Success(b) => b
+    }
+  }
+
+  implicit class RichTryEither[T](val self: Either[_ <: Throwable, T]) {
+    def toTry(): Try[T] = self match {
+      case Left(a) => Failure(a)
+      case Right(b) => Success(b)
     }
   }
 }

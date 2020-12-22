@@ -13,6 +13,7 @@ class RunTaskOperatorFactory(val operatorName: String) extends OperatorFactory {
 
 class RunTaskOperator(operatorName: String, ctx: OperatorContext) extends BaseOperator(ctx) {
 
+  import io.digdag.plugin.aws.ecs.client._
   import io.digdag.plugin.aws.ecs.runtask._
 
   override def runTask(): TaskResult = {
@@ -21,8 +22,8 @@ class RunTaskOperator(operatorName: String, ctx: OperatorContext) extends BaseOp
     println(config)
 
     val result = for {
-      clientParams <- EcsClientParams(config)
-      ecsClient <- EcsClient(clientParams)
+      ecsClient <- EcsClient(config)("aws.configure", "aws.ecs", "aws.ecs.run_task")
+
       // ecsResponse <- RunTask(ecsClient, operatorParams.params)
       // outputParams <- OutputParams(operatorParams.output, ecsResponse)(configFactory)
     } {
