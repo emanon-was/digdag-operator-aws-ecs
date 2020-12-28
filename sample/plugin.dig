@@ -51,11 +51,18 @@ _export:
   #   file: $HOME/.aws/credentials # (optional)
   # region: "ap-northeast-1" # (optional)
   params:
-    application: digdag
-    environment: main
-    configuration: json
-    client_id: abcdefghijklmnopqrstuvwxyz # (required)
-  output: _
+    task_definition: hello-world
+    cluster: develop
+    launch_type: FARGATE
+    network_configuration:
+      awsvpc_configuration:
+        subnets:
+          - subnet-*****************
+          - subnet-*****************
+          - subnet-*****************
+        securityGroups:
+          - sg-*****************
+        assignPublicIp: DISABLED
 
 # +step2:
 #   echo>: ${_}

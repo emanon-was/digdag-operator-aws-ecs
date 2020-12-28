@@ -23,13 +23,16 @@ class RunTaskOperator(operatorName: String, ctx: OperatorContext) extends BaseOp
 
     val result = for {
       ecsClient <- EcsClient(config)("aws.configure", "aws.ecs", "aws.ecs.run_task")
-
+      runTaskParams <- RunTaskParams(config)("aws.ecs.run_task")
       // ecsResponse <- RunTask(ecsClient, operatorParams.params)
       // outputParams <- OutputParams(operatorParams.output, ecsResponse)(configFactory)
-    } {
-
+    } yield {
       println(ecsClient)
+      println(runTaskParams)
+      ecsClient.runTask(runTaskParams.request)
     }
+
+    println(result)
 
     TaskResult.defaultBuilder(request).build()
     // val logger = LoggerFactory.getLogger(operatorName)
