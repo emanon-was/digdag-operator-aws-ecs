@@ -1,10 +1,19 @@
 package io.digdag.plugin.aws.ecs
 
+import scala.util.Try
+import collection.JavaConverters._
+
 import io.digdag.spi.{OperatorFactory, Operator, OperatorContext, TaskResult}
 import io.digdag.util.BaseOperator
 import io.digdag.client.config.Config
+import io.digdag.client.config.ConfigKey
 import io.digdag.plugin.aws.ecs.implicits._
+
+import io.circe._
+import io.circe.syntax._
+import io.circe.generic.auto._
 import org.slf4j.{Logger, LoggerFactory}
+import software.amazon.awssdk.services.ecs.model.Task
 
 class RunTaskOperatorFactory(val operatorName: String) extends OperatorFactory {
   override def getType(): String = operatorName
@@ -15,6 +24,12 @@ class RunTaskOperator(operatorName: String, ctx: OperatorContext) extends BaseOp
 
   import io.digdag.plugin.aws.ecs.client._
   import io.digdag.plugin.aws.ecs.runtask._
+  import io.digdag.plugin.aws.ecs.wait._
+
+  sealed trait Error extends Err
+  object Error {
+    case class RunTaskErr(val err: Throwable) extends Error with Err.Throws
+  }
 
   override def runTask(): TaskResult = {
     val config = request.getConfig
@@ -23,30 +38,31 @@ class RunTaskOperator(operatorName: String, ctx: OperatorContext) extends BaseOp
 
     val result = for {
       ecsClient <- EcsClient(config)("aws.configure", "aws.ecs", "aws.ecs.run_task")
-      runTaskParams <- RunTaskParams(config)("aws.ecs.run_task")
-      // ecsResponse <- RunTask(ecsClient, operatorParams.params)
-      // outputParams <- OutputParams(operatorParams.output, ecsResponse)(configFactory)
-    } yield {
-      println(ecsClient)
-      println(runTaskParams)
-      ecsClient.runTask(runTaskParams.request)
+      runTaskRequest <- RunTaskRequest(config)("aws.ecs.run_task")
+      response <- Try(ecsClient.runTask(runTaskRequest)).toEither(Error.RunTaskErr)
+    } yield response
+
+    val logger = LoggerFactory.getLogger(operatorName)
+    result match {
+      case Left(err) => {
+        logger.error("{}", err)
+        err.panic
+      }
+      case Right(response) => {
+        logger.info("Response: {}", response)
+        val result = WaitConfig(
+          WaitConfig.RunTask(
+            response.tasks().asScala.toList.map(task =>
+              WaitConfig.Task(
+                task.clusterArn(),
+                task.taskArn(),
+                task.taskDefinitionArn())
+            )))
+        TaskResult.defaultBuilder(request)
+          .resetStoreParams(List(ConfigKey.of("last_run_task")).asJava)
+          .also(_.storeParams(configFactory.fromJsonString(result.asJson.noSpaces)))
+          .build()
+      }
     }
-
-    println(result)
-
-    TaskResult.defaultBuilder(request).build()
-    // val logger = LoggerFactory.getLogger(operatorName)
-    // result match {
-    //   case Left(err) => {
-    //     logger.error("{}", err)
-    //     err.panic
-    //   }
-    //   case Right(outputParams) => {
-    //     logger.info("OutputParams: {}", outputParams)
-    //     TaskResult.defaultBuilder(request)
-    //       .also(_.storeParams(outputParams))
-    //       .build()
-    //   }
-    // }
   }
 }

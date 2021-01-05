@@ -19,11 +19,13 @@ lazy val root = (project in file("."))
     name := "digdag-operator-aws-ecs",
     resolvers += "bintray-digdag" at "https://dl.bintray.com/digdag/maven",
     libraryDependencies += scalaTest % Test,
-    libraryDependencies += catsDeps,
+    libraryDependencies += effDeps,
     libraryDependencies ++= digdagDeps.map(dep => Seq(dep % Provided, dep % Test)).flatten,
     libraryDependencies ++= slf4jDeps.map(dep => Seq(dep % Provided, dep % Test)).flatten,
     libraryDependencies ++= awsjavasdkDeps,
     libraryDependencies ++= circleDeps,
+    addCompilerPlugin("org.typelevel" %% "kind-projector" % "0.11.2" cross CrossVersion.full),
+    scalacOptions += "-Ypartial-unification"
   )
 
 

@@ -1,25 +1,25 @@
 package io.digdag.plugin.aws.ecs.runtask
 
-case class RunTaskConfig(
-  // val capacity_provider_strategy: Option[List[RunTaskConfig.CapacityProviderStrategy]],
+case class RunTaskRequestConfig(
+  // val capacity_provider_strategy: Option[List[RunTaskRequestConfig.CapacityProviderStrategy]],
   val cluster: Option[String],
   // val count: Option[Int],
   val enable_ecs_managed_tags: Option[Boolean],
   val group: Option[String],
   val launch_type: Option[String],
-  val network_configuration: Option[RunTaskConfig.NetworkConfiguration],
-  val overrides: Option[RunTaskConfig.Override],
-  // val placement_constraints: Option[List[RunTaskConfig.PlacementConstraint]],
-  // val placement_strategy: Option[List[RunTaskConfig.PlacementStrategy]],
+  val network_configuration: Option[RunTaskRequestConfig.NetworkConfiguration],
+  val overrides: Option[RunTaskRequestConfig.Override],
+  // val placement_constraints: Option[List[RunTaskRequestConfig.PlacementConstraint]],
+  // val placement_strategy: Option[List[RunTaskRequestConfig.PlacementStrategy]],
   val platform_version: Option[String],
   // val propagate_tags: Option[String],
   // val reference_id: Option[String],
   // val started_by: Option[String],
-  val tags: Option[List[RunTaskConfig.Tag]],
+  val tags: Option[List[RunTaskRequestConfig.Tag]],
   val task_definition: String,
 )
 
-object RunTaskConfig {
+object RunTaskRequestConfig {
 
   // CapacityProviderStrategy
 

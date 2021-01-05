@@ -4,7 +4,10 @@ object Dependencies {
   lazy val scalaTest = "org.scalatest" %% "scalatest" % "3.0.5"
 
   // cats
-  val catsDeps = "org.typelevel" %% "cats-core" % "2.2.0"
+  // val catsDeps = "org.typelevel" %% "cats-core" % "2.2.0"
+
+  // Eff
+  val effDeps = "org.atnos" %% "eff" % "5.13.0"
 
   // Digdag
   val digdagVersion = "0.9.42"
